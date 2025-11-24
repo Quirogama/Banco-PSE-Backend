@@ -1,4 +1,44 @@
-import { Controller } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  Body,
+  Param,
+  UseGuards,
+  Request,
+} from '@nestjs/common';
+import { PagosService } from './pagos.service';
+import { CreatePagoDto } from './dto/create-pago.dto';
+import { ProcesarPagoDto } from './dto/procesar-pago.dto';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @Controller('pagos')
-export class PagosController {}
+export class PagosController {
+  constructor(private pagosService: PagosService) {}
+
+  // Endpoint para crear un pago desde el sistema de turismo (sin autenticación)
+  @Post('crear')
+  async crearPago(@Body() createPagoDto: CreatePagoDto) {
+    return this.pagosService.crearPago(createPagoDto);
+  }
+
+  // Endpoint para procesar el pago (autenticación en el banco)
+  @Post('procesar')
+  async procesarPago(@Body() procesarPagoDto: ProcesarPagoDto) {
+    return this.pagosService.procesarPago(procesarPagoDto);
+  }
+
+  // Obtener información de un pago específico
+  @Get(':id')
+  async obtenerPago(@Param('id') id: string) {
+    return this.pagosService.obtenerPago(parseInt(id, 10));
+  }
+
+  // Obtener todos los pagos del usuario autenticado
+  @UseGuards(JwtAuthGuard)
+  @Get('usuario/mis-pagos')
+  async obtenerMisPagos(@Request() req: any) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    return this.pagosService.obtenerPagosUsuario(req.user.userId as number);
+  }
+}

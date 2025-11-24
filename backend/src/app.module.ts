@@ -1,13 +1,22 @@
 import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { ClientesModule } from './clientes/clientes.module';
 import { PagosModule } from './pagos/pagos.module';
-import { TransaccionesModule } from './transacciones/transacciones.module';
 import { AuthModule } from './auth/auth.module';
+import { databaseConfig } from './config/database.config';
 
 @Module({
-  imports: [ClientesModule, PagosModule, TransaccionesModule, AuthModule],
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: '.env',
+    }),
+    TypeOrmModule.forRoot(databaseConfig),
+    PagosModule,
+    AuthModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
