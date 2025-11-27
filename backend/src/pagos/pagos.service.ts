@@ -25,6 +25,7 @@ export class PagosService {
   // Crear un pago pendiente desde el sistema de turismo
   async crearPago(createPagoDto: CreatePagoDto) {
     // Buscar usuario por tipoDocumento e identificacion
+
     const tipoDocumento = String(createPagoDto.tipoDocumento ?? '').trim();
     const identificacion = String(createPagoDto.identificacion ?? '').trim();
     if (!tipoDocumento || !identificacion) {
@@ -49,6 +50,7 @@ export class PagosService {
       throw new NotFoundException('Usuario no encontrado');
     }
 
+    // Solo guardar los campos requeridos
     const pago = this.pagoRepository.create({
       idUsuario: usuario.id,
       monto: createPagoDto.monto,
