@@ -34,7 +34,7 @@ let PagosController = class PagosController {
         const params = new URLSearchParams({
             id: String(pago.id),
             idUsuario: String(pago.idUsuario),
-            fecha: pago.fecha.toISOString(),
+            fecha: new Date(pago.fecha).toISOString(),
             monto: String(pago.monto),
             estado: pago.estado,
             tipoDocumento: pago.usuario?.tipoDocumento ?? '',
