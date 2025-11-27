@@ -15,6 +15,7 @@ const pago_entity_1 = require("../pagos/pago.entity");
 let Usuario = class Usuario {
     id;
     tipoDocumento;
+    documento;
     nombre;
     apellido;
     email;
@@ -34,6 +35,11 @@ __decorate([
     (0, typeorm_1.Column)({ name: 'tipoDocumento', nullable: true, length: 20 }),
     __metadata("design:type", String)
 ], Usuario.prototype, "tipoDocumento", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ nullable: true, length: 50 }),
+    (0, typeorm_1.Index)(),
+    __metadata("design:type", String)
+], Usuario.prototype, "documento", void 0);
 __decorate([
     (0, typeorm_1.Column)({ nullable: true, length: 100 }),
     __metadata("design:type", String)

@@ -5,6 +5,14 @@ export declare class Pago {
     fecha: Date;
     monto: number;
     estado: string;
+    referenciaTransaccion: string;
+    descripcionPago: string;
+    cedulaCliente: string;
+    nombreCliente: string;
+    urlRespuesta: string;
+    urlNotificacion: string;
+    destinatario: string;
+    codigoAutorizacion: string;
     usuario: Usuario;
     correos: Array<{
         id: number;

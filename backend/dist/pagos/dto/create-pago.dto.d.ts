@@ -1,7 +1,13 @@
 export declare class CreatePagoDto {
-    idUsuario: number;
-    monto: number;
-    descripcion?: string;
-    referenciaTurismo?: string;
-    nombreReserva?: string;
+    monto_total: number;
+    descripcion_pago: string;
+    cedula_cliente: string;
+    nombre_cliente: string;
+    url_respuesta: string;
+    url_notificacion: string;
+    destinatario: string;
+}
+export declare class CreatePagoResponseDto {
+    referencia_transaccion: string;
+    url_banco: string;
 }

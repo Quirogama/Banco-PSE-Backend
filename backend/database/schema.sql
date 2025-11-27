@@ -74,17 +74,19 @@ VALUES ('NIT', '900123456-1', 'Solución', 'Turismo', 'solucion.turismo@sistema.
 -- Contraseña: cliente123 (hasheada con bcrypt)
 INSERT INTO usuario (tipoDocumento, documento, nombre, apellido, email, contrasena, telefono, ocupacion, rol, balance)
 VALUES ('CC', '1234567890', 'Juan', 'Pérez', 'juan.perez@email.com', 
-        '$2b$10$vI8aWBnW3fID.ZQ4/zo1G.q1lRps.9cGLcZEiGDMVr5yUP1KUOYTa', 
+        '$2b$10$6itW65Zmc0yXQtAJZuJ3LuxOuZvCTH9rIh8SjeF1pm5RQb6ITcWqK', 
         '3009876543', 'Ingeniero', 'cliente', 5000000.00);
 
 -- Usuario cliente adicional
+-- Contraseña: cliente123
 INSERT INTO usuario (tipoDocumento, documento, nombre, apellido, email, contrasena, telefono, ocupacion, rol, balance)
 VALUES ('CC', '9876543210', 'María', 'García', 'maria.garcia@email.com', 
-        '$2b$10$vI8aWBnW3fID.ZQ4/zo1G.q1lRps.9cGLcZEiGDMVr5yUP1KUOYTa', 
+        '$2b$10$6itW65Zmc0yXQtAJZuJ3LuxOuZvCTH9rIh8SjeF1pm5RQb6ITcWqK', 
         '3005551234', 'Contadora', 'cliente', 3000000.00);
 
 -- Usuario guest para pagos sin registro
+-- Contraseña: cliente123
 INSERT INTO usuario (tipoDocumento, documento, nombre, apellido, email, contrasena, telefono, ocupacion, rol, balance)
 VALUES ('CC', '0000000000', 'Usuario', 'Invitado', 'guest@banco.com', 
-        '$2b$10$vI8aWBnW3fID.ZQ4/zo1G.q1lRps.9cGLcZEiGDMVr5yUP1KUOYTa', 
+        '$2b$10$6itW65Zmc0yXQtAJZuJ3LuxOuZvCTH9rIh8SjeF1pm5RQb6ITcWqK', 
         '0000000000', 'Invitado', 'cliente', 10000000.00);

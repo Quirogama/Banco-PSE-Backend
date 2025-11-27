@@ -300,12 +300,15 @@ export class PagosService {
   // =====================================================
 
   async procesarPago(procesarPagoDto: ProcesarPagoDto) {
-    if (!procesarPagoDto.pagoId || isNaN(Number(procesarPagoDto.pagoId))) {
+    // Acepta pagoId o id_pago
+    const pagoId = procesarPagoDto.pagoId || procesarPagoDto.id_pago;
+    
+    if (!pagoId || isNaN(Number(pagoId))) {
       throw new BadRequestException('El pagoId es inválido');
     }
 
     const pago = await this.pagoRepository.findOne({
-      where: { id: procesarPagoDto.pagoId },
+      where: { id: Number(pagoId) },
       relations: ['usuario'],
     });
 
@@ -317,9 +320,19 @@ export class PagosService {
       throw new BadRequestException('Este pago ya ha sido procesado');
     }
 
-    const usuario = await this.usuarioRepository.findOne({
-      where: { email: procesarPagoDto.email },
+    // Acepta email o cedula_cliente (buscar por documento)
+    const identificador = procesarPagoDto.email || procesarPagoDto.cedula_cliente;
+    
+    let usuario = await this.usuarioRepository.findOne({
+      where: { email: identificador },
     });
+    
+    // Si no encuentra por email, buscar por documento
+    if (!usuario && procesarPagoDto.cedula_cliente) {
+      usuario = await this.usuarioRepository.findOne({
+        where: { documento: procesarPagoDto.cedula_cliente },
+      });
+    }
 
     if (!usuario) {
       pago.estado = 'fallido';

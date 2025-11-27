@@ -10,6 +10,7 @@ export declare class AuthService {
     register(registerDto: RegisterDto): Promise<{
         id: number;
         tipoDocumento: string;
+        documento: string;
         nombre: string;
         apellido: string;
         email: string;
@@ -24,6 +25,7 @@ export declare class AuthService {
         user: {
             id: number;
             tipoDocumento: string;
+            documento: string;
             nombre: string;
             apellido: string;
             email: string;

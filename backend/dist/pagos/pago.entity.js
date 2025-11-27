@@ -18,6 +18,14 @@ let Pago = class Pago {
     fecha;
     monto;
     estado;
+    referenciaTransaccion;
+    descripcionPago;
+    cedulaCliente;
+    nombreCliente;
+    urlRespuesta;
+    urlNotificacion;
+    destinatario;
+    codigoAutorizacion;
     usuario;
     correos;
 };
@@ -43,6 +51,38 @@ __decorate([
     (0, typeorm_1.Column)({ nullable: true, length: 50 }),
     __metadata("design:type", String)
 ], Pago.prototype, "estado", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ name: 'referencia_transaccion', nullable: true, length: 100 }),
+    __metadata("design:type", String)
+], Pago.prototype, "referenciaTransaccion", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ name: 'descripcion_pago', nullable: true, length: 255 }),
+    __metadata("design:type", String)
+], Pago.prototype, "descripcionPago", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ name: 'cedula_cliente', nullable: true, length: 50 }),
+    __metadata("design:type", String)
+], Pago.prototype, "cedulaCliente", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ name: 'nombre_cliente', nullable: true, length: 100 }),
+    __metadata("design:type", String)
+], Pago.prototype, "nombreCliente", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ name: 'url_respuesta', nullable: true, length: 500 }),
+    __metadata("design:type", String)
+], Pago.prototype, "urlRespuesta", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ name: 'url_notificacion', nullable: true, length: 500 }),
+    __metadata("design:type", String)
+], Pago.prototype, "urlNotificacion", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ nullable: true, length: 50 }),
+    __metadata("design:type", String)
+], Pago.prototype, "destinatario", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ name: 'codigo_autorizacion', nullable: true, length: 50 }),
+    __metadata("design:type", String)
+], Pago.prototype, "codigoAutorizacion", void 0);
 __decorate([
     (0, typeorm_1.ManyToOne)(() => usuario_entity_1.Usuario, (usuario) => usuario.pagos),
     (0, typeorm_1.JoinColumn)({ name: 'id_usuario' }),
