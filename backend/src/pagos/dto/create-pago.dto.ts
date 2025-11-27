@@ -1,7 +1,12 @@
-
 export class CreatePagoDto {
   monto: number;
   tipoDocumento: string;
   identificacion: string;
-  // Puedes agregar otros campos si lo necesitas
+  monto_total: number;
+  descripcion_pago: string;
+  cedula_cliente: number;
+  nombre_cliente: string;
+  url_respuesta: string;
+  url_notificacion: string;
+  destinatario: number;
 }
