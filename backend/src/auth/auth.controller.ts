@@ -22,6 +22,7 @@ export class AuthController {
 
   @Post('login')
   async login(@Body() loginDto: LoginDto) {
+    // Espera: { tipoDocumento, identificacion, contrasena }
     return this.authService.login(loginDto);
   }
 

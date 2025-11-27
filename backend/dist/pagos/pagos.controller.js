@@ -18,16 +18,35 @@ const pagos_service_1 = require("./pagos.service");
 const create_pago_dto_1 = require("./dto/create-pago.dto");
 const procesar_pago_dto_1 = require("./dto/procesar-pago.dto");
 const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
+const common_2 = require("@nestjs/common");
 let PagosController = class PagosController {
     pagosService;
     constructor(pagosService) {
         this.pagosService = pagosService;
     }
-    async crearPago(createPagoDto) {
-        return this.pagosService.crearPago(createPagoDto);
+    async crearPago(createPagoDto, res) {
+        const pago = await this.pagosService.crearPago(createPagoDto);
+        return res.redirect(302, `http://localhost:3001/pago/${pago.pagoId}`);
     }
-    async procesarPago(procesarPagoDto) {
-        return this.pagosService.procesarPago(procesarPagoDto);
+    async procesarPago(procesarPagoDto, res) {
+        const resultado = await this.pagosService.procesarPago(procesarPagoDto);
+        const pago = await this.pagosService.obtenerPago(resultado.pagoId);
+        const params = new URLSearchParams({
+            id: String(pago.id),
+            idUsuario: String(pago.idUsuario),
+            fecha: new Date(pago.fecha).toISOString(),
+            monto: String(pago.monto),
+            estado: pago.estado,
+            tipoDocumento: pago.usuario?.tipoDocumento ?? '',
+            nombre: pago.usuario?.nombre ?? '',
+            apellido: pago.usuario?.apellido ?? '',
+            email: pago.usuario?.email ?? '',
+            telefono: pago.usuario?.telefono ?? '',
+            ocupacion: pago.usuario?.ocupacion ?? '',
+            rol: pago.usuario?.rol ?? '',
+            balance: String(pago.usuario?.balance ?? ''),
+        });
+        return res.redirect(302, `http://localhost:3002/solucion-turismo?${params.toString()}`);
     }
     async obtenerPago(id) {
         return this.pagosService.obtenerPago(parseInt(id, 10));
@@ -40,15 +59,17 @@ exports.PagosController = PagosController;
 __decorate([
     (0, common_1.Post)('crear'),
     __param(0, (0, common_1.Body)()),
+    __param(1, (0, common_2.Res)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [create_pago_dto_1.CreatePagoDto]),
+    __metadata("design:paramtypes", [create_pago_dto_1.CreatePagoDto, Object]),
     __metadata("design:returntype", Promise)
 ], PagosController.prototype, "crearPago", null);
 __decorate([
     (0, common_1.Post)('procesar'),
     __param(0, (0, common_1.Body)()),
+    __param(1, (0, common_2.Res)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [procesar_pago_dto_1.ProcesarPagoDto]),
+    __metadata("design:paramtypes", [procesar_pago_dto_1.ProcesarPagoDto, Object]),
     __metadata("design:returntype", Promise)
 ], PagosController.prototype, "procesarPago", null);
 __decorate([

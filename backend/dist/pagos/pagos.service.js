@@ -63,14 +63,26 @@ let PagosService = class PagosService {
         this.mailService = mailService;
     }
     async crearPago(createPagoDto) {
+        const tipoDocumento = String(createPagoDto.tipoDocumento ?? '').trim();
+        const identificacion = String(createPagoDto.identificacion ?? '').trim();
+        if (!tipoDocumento || !identificacion) {
+            throw new common_1.BadRequestException('Tipo de documento e identificación son requeridos');
+        }
+        const idNum = Number(identificacion);
+        if (isNaN(idNum)) {
+            throw new common_1.BadRequestException('La identificación debe ser un número válido');
+        }
         const usuario = await this.usuarioRepository.findOne({
-            where: { id: createPagoDto.idUsuario },
+            where: {
+                tipoDocumento,
+                id: idNum,
+            },
         });
         if (!usuario) {
             throw new common_1.NotFoundException('Usuario no encontrado');
         }
         const pago = this.pagoRepository.create({
-            idUsuario: createPagoDto.idUsuario,
+            idUsuario: usuario.id,
             monto: createPagoDto.monto,
             fecha: new Date(),
             estado: 'pendiente',

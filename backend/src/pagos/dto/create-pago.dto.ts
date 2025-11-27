@@ -1,8 +1,7 @@
+
 export class CreatePagoDto {
-  idUsuario: number;
   monto: number;
-  descripcion?: string;
-  // Datos del sistema de turismo
-  referenciaTurismo?: string;
-  nombreReserva?: string;
+  tipoDocumento: string;
+  identificacion: string;
+  // Puedes agregar otros campos si lo necesitas
 }

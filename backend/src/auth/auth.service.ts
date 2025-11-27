@@ -45,7 +45,10 @@ export class AuthService {
 
   async login(loginDto: LoginDto) {
     const usuario = await this.usuarioRepository.findOne({
-      where: { email: loginDto.email },
+      where: {
+        tipoDocumento: loginDto.tipoDocumento,
+        id: Number(loginDto.identificacion),
+      },
     });
 
     if (!usuario) {
@@ -65,7 +68,8 @@ export class AuthService {
     // Generar token JWT
     const payload = {
       sub: usuario.id,
-      email: usuario.email,
+      tipoDocumento: usuario.tipoDocumento,
+      identificacion: usuario.id,
       rol: usuario.rol,
     };
 
