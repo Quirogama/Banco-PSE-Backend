@@ -13,7 +13,6 @@ const jwt_1 = require("@nestjs/jwt");
 const passport_1 = require("@nestjs/passport");
 const config_1 = require("@nestjs/config");
 const auth_controller_1 = require("./auth.controller");
-const users_controller_1 = require("./users.controller");
 const auth_service_1 = require("./auth.service");
 const usuario_entity_1 = require("./usuario.entity");
 const jwt_strategy_1 = require("./strategies/jwt.strategy");
@@ -36,7 +35,7 @@ exports.AuthModule = AuthModule = __decorate([
                 inject: [config_1.ConfigService],
             }),
         ],
-        controllers: [auth_controller_1.AuthController, users_controller_1.UsersController],
+        controllers: [auth_controller_1.AuthController],
         providers: [auth_service_1.AuthService, jwt_strategy_1.JwtStrategy],
         exports: [typeorm_1.TypeOrmModule, auth_service_1.AuthService],
     })
