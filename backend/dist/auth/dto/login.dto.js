@@ -2,7 +2,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.LoginDto = void 0;
 class LoginDto {
-    email;
+    tipoDocumento;
+    identificacion;
     contrasena;
 }
 exports.LoginDto = LoginDto;

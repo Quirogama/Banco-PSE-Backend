@@ -24,8 +24,25 @@ export class PagosService {
 
   // Crear un pago pendiente desde el sistema de turismo
   async crearPago(createPagoDto: CreatePagoDto) {
+    // Buscar usuario por tipoDocumento e identificacion
+    const tipoDocumento = String(createPagoDto.tipoDocumento ?? '').trim();
+    const identificacion = String(createPagoDto.identificacion ?? '').trim();
+    if (!tipoDocumento || !identificacion) {
+      throw new BadRequestException(
+        'Tipo de documento e identificación son requeridos',
+      );
+    }
+    const idNum = Number(identificacion);
+    if (isNaN(idNum)) {
+      throw new BadRequestException(
+        'La identificación debe ser un número válido',
+      );
+    }
     const usuario = await this.usuarioRepository.findOne({
-      where: { id: createPagoDto.idUsuario },
+      where: {
+        tipoDocumento,
+        id: idNum,
+      },
     });
 
     if (!usuario) {
@@ -33,7 +50,7 @@ export class PagosService {
     }
 
     const pago = this.pagoRepository.create({
-      idUsuario: createPagoDto.idUsuario,
+      idUsuario: usuario.id,
       monto: createPagoDto.monto,
       fecha: new Date(),
       estado: 'pendiente',

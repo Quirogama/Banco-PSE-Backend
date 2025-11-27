@@ -1,1 +1,1 @@
-{"version":3,"file":"create-pago.dto.js","sourceRoot":"","sources":["../../../src/pagos/dto/create-pago.dto.ts"],"names":[],"mappings":";;;AAAA,MAAa,aAAa;IACxB,SAAS,CAAS;IAClB,KAAK,CAAS;IACd,WAAW,CAAU;IAErB,iBAAiB,CAAU;IAC3B,aAAa,CAAU;CACxB;AAPD,sCAOC"}
+{"version":3,"file":"create-pago.dto.js","sourceRoot":"","sources":["../../../src/pagos/dto/create-pago.dto.ts"],"names":[],"mappings":";;;AACA,MAAa,aAAa;IACxB,KAAK,CAAS;IACd,aAAa,CAAS;IACtB,cAAc,CAAS;CAExB;AALD,sCAKC"}

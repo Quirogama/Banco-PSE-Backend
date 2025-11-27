@@ -78,7 +78,10 @@ let AuthService = class AuthService {
     }
     async login(loginDto) {
         const usuario = await this.usuarioRepository.findOne({
-            where: { email: loginDto.email },
+            where: {
+                tipoDocumento: loginDto.tipoDocumento,
+                id: Number(loginDto.identificacion),
+            },
         });
         if (!usuario) {
             throw new common_1.UnauthorizedException('Credenciales inválidas');
@@ -89,7 +92,8 @@ let AuthService = class AuthService {
         }
         const payload = {
             sub: usuario.id,
-            email: usuario.email,
+            tipoDocumento: usuario.tipoDocumento,
+            identificacion: usuario.id,
             rol: usuario.rol,
         };
         const token = this.jwtService.sign(payload);

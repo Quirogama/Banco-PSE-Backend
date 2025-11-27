@@ -1,4 +1,5 @@
 export class LoginDto {
-  email: string;
+  tipoDocumento: string;
+  identificacion: string;
   contrasena: string;
 }
