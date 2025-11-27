@@ -62,32 +62,212 @@ let PagosService = class PagosService {
         this.usuarioRepository = usuarioRepository;
         this.mailService = mailService;
     }
-    async crearPago(createPagoDto) {
-        const usuario = await this.usuarioRepository.findOne({
-            where: { id: createPagoDto.idUsuario },
+    async crearPagoOficial(dto) {
+        let usuario = await this.usuarioRepository.findOne({
+            where: { documento: dto.cedula_cliente },
         });
-        if (!usuario) {
-            throw new common_1.NotFoundException('Usuario no encontrado');
+        if (!usuario && !isNaN(Number(dto.cedula_cliente))) {
+            usuario = await this.usuarioRepository.findOne({
+                where: { id: Number(dto.cedula_cliente) },
+            });
         }
+        if (!usuario) {
+            usuario = await this.usuarioRepository.findOne({
+                where: { email: 'guest@banco.com' },
+            });
+            if (!usuario) {
+                usuario = await this.usuarioRepository.findOne({
+                    where: { rol: 'cliente' },
+                });
+            }
+        }
+        if (!usuario) {
+            throw new common_1.NotFoundException('Usuario no encontrado en el sistema bancario. Debe registrarse primero.');
+        }
+        const now = new Date();
+        const dateStr = now.toISOString().slice(0, 10).replace(/-/g, '');
+        const suffix = Math.random().toString(36).substring(2, 8).toUpperCase();
+        const referenciaTransaccion = `BDB-${dateStr}-${suffix}`;
         const pago = this.pagoRepository.create({
-            idUsuario: createPagoDto.idUsuario,
-            monto: createPagoDto.monto,
-            fecha: new Date(),
+            idUsuario: usuario.id,
+            monto: dto.monto_total,
+            fecha: now,
             estado: 'pendiente',
+            referenciaTransaccion: referenciaTransaccion,
+            descripcionPago: dto.descripcion_pago,
+            cedulaCliente: dto.cedula_cliente,
+            nombreCliente: dto.nombre_cliente,
+            urlRespuesta: dto.url_respuesta,
+            urlNotificacion: dto.url_notificacion,
+            destinatario: dto.destinatario,
         });
         const pagoGuardado = await this.pagoRepository.save(pago);
+        const baseUrl = process.env.BANK_PUBLIC_URL || 'http://localhost:3000';
+        const urlBanco = `${baseUrl}/pago/${pagoGuardado.id}?ref=${referenciaTransaccion}`;
         return {
-            pagoId: pagoGuardado.id,
-            redirectUrl: `/pago/${pagoGuardado.id}`,
-            message: 'Pago creado. Redirigir al usuario al banco para completar el pago.',
+            referencia_transaccion: referenciaTransaccion,
+            url_banco: urlBanco,
         };
     }
+    async consultarEstado(idTransaccion, idPago) {
+        let pago = null;
+        if (idTransaccion) {
+            pago = await this.pagoRepository.findOne({
+                where: { referenciaTransaccion: idTransaccion },
+            });
+        }
+        if (!pago && idPago) {
+            pago = await this.pagoRepository.findOne({
+                where: { id: parseInt(idPago, 10) },
+            });
+        }
+        if (!pago) {
+            throw new common_1.NotFoundException('Transacción no encontrada');
+        }
+        let estadoDoc = 'PENDIENTE';
+        if (pago.estado === 'exitoso')
+            estadoDoc = 'APROBADA';
+        else if (pago.estado === 'fallido')
+            estadoDoc = 'DENEGADA';
+        else if (pago.estado === 'cancelado')
+            estadoDoc = 'CANCELADA';
+        let fechaActualizacion;
+        if (pago.fecha instanceof Date) {
+            fechaActualizacion = pago.fecha.toISOString();
+        }
+        else if (pago.fecha) {
+            fechaActualizacion = new Date(pago.fecha).toISOString();
+        }
+        else {
+            fechaActualizacion = new Date().toISOString();
+        }
+        return {
+            estado: estadoDoc,
+            detalle: `Estado del pago: ${pago.estado}`,
+            monto: pago.monto,
+            moneda: 'COP',
+            codigo_autorizacion: pago.codigoAutorizacion || null,
+            comprobante: pago.estado === 'exitoso' ? `COMP-${pago.id}` : null,
+            fecha_actualizacion: fechaActualizacion,
+        };
+    }
+    async solicitarReembolso(dto) {
+        const pago = await this.pagoRepository.findOne({
+            where: { referenciaTransaccion: dto.id_transaccion_original },
+        });
+        if (!pago) {
+            return {
+                referencia_reembolso: dto.referencia_reembolso,
+                id_reembolso_banco: null,
+                estado_solicitud: 'RECHAZADA',
+                monto_procesado: 0,
+                codigo_respuesta: '55',
+                mensaje_respuesta: 'Transacción original no encontrada',
+            };
+        }
+        if (pago.estado !== 'exitoso') {
+            return {
+                referencia_reembolso: dto.referencia_reembolso,
+                id_reembolso_banco: null,
+                estado_solicitud: 'RECHAZADA',
+                monto_procesado: 0,
+                codigo_respuesta: '54',
+                mensaje_respuesta: 'La transacción no está en estado exitoso',
+            };
+        }
+        if (dto.monto_a_reembolsar > Number(pago.monto)) {
+            return {
+                referencia_reembolso: dto.referencia_reembolso,
+                id_reembolso_banco: null,
+                estado_solicitud: 'RECHAZADA',
+                monto_procesado: 0,
+                codigo_respuesta: '56',
+                mensaje_respuesta: 'Monto de reembolso excede el monto original',
+            };
+        }
+        const idReembolso = `REF-${Date.now()}`;
+        const usuario = await this.usuarioRepository.findOne({
+            where: { id: pago.idUsuario },
+        });
+        const turismo = await this.usuarioRepository.findOne({
+            where: { email: 'solucion.turismo@sistema.com' },
+        });
+        if (usuario && turismo) {
+            usuario.balance = Number(usuario.balance) + Number(dto.monto_a_reembolsar);
+            turismo.balance = Number(turismo.balance) - Number(dto.monto_a_reembolsar);
+            await this.usuarioRepository.save([usuario, turismo]);
+            console.log(`[REEMBOLSO] Devuelto $${dto.monto_a_reembolsar} a usuario ${usuario.id}`);
+        }
+        else {
+            console.warn('[REEMBOLSO] No se pudo realizar el movimiento de fondos - usuarios no encontrados');
+        }
+        pago.estado = 'reembolsado';
+        await this.pagoRepository.save(pago);
+        return {
+            referencia_reembolso: dto.referencia_reembolso,
+            id_reembolso_banco: idReembolso,
+            estado_solicitud: 'ACEPTADA',
+            monto_procesado: dto.monto_a_reembolsar,
+            codigo_respuesta: '00',
+            mensaje_respuesta: 'Solicitud de reembolso aceptada',
+        };
+    }
+    async validarComprobante(idTransaccion, montoEsperado) {
+        const pago = await this.pagoRepository.findOne({
+            where: { referenciaTransaccion: idTransaccion },
+        });
+        if (!pago) {
+            return { valido: 'NO', detalle: 'Transacción no encontrada' };
+        }
+        if (pago.estado !== 'exitoso') {
+            return { valido: 'NO', detalle: 'Transacción no está aprobada' };
+        }
+        const montoCoincide = Number(pago.monto) === montoEsperado;
+        return {
+            valido: montoCoincide ? 'SI' : 'NO',
+            detalle: montoCoincide ? 'Comprobante válido' : 'Monto no coincide',
+        };
+    }
+    async enviarWebhook(pago, estado) {
+        if (!pago.urlNotificacion) {
+            console.log('[WEBHOOK] No hay URL de notificación configurada');
+            return;
+        }
+        const payload = {
+            referencia_transaccion: pago.referenciaTransaccion,
+            estado_transaccion: estado,
+            monto_transaccion: pago.monto,
+            fecha_hora_pago: new Date().toISOString(),
+            codigo_respuesta: estado === 'APROBADA' ? '00' : '51',
+            metodo_pago: 'CUENTA_BANCARIA',
+        };
+        console.log(`[WEBHOOK] Enviando notificación a ${pago.urlNotificacion}`);
+        try {
+            const response = await fetch(pago.urlNotificacion, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(payload),
+            });
+            if (response.ok) {
+                console.log('[WEBHOOK] Notificación enviada exitosamente');
+            }
+            else {
+                console.error(`[WEBHOOK] Error: ${response.status} ${response.statusText}`);
+            }
+        }
+        catch (error) {
+            console.error('[WEBHOOK] Error enviando notificación:', error);
+        }
+    }
     async procesarPago(procesarPagoDto) {
-        if (!procesarPagoDto.pagoId || isNaN(Number(procesarPagoDto.pagoId))) {
+        const pagoId = procesarPagoDto.pagoId || procesarPagoDto.id_pago;
+        if (!pagoId || isNaN(Number(pagoId))) {
             throw new common_1.BadRequestException('El pagoId es inválido');
         }
         const pago = await this.pagoRepository.findOne({
-            where: { id: procesarPagoDto.pagoId },
+            where: { id: Number(pagoId) },
             relations: ['usuario'],
         });
         if (!pago) {
@@ -96,23 +276,32 @@ let PagosService = class PagosService {
         if (pago.estado === 'exitoso') {
             throw new common_1.BadRequestException('Este pago ya ha sido procesado');
         }
-        const usuario = await this.usuarioRepository.findOne({
-            where: { email: procesarPagoDto.email },
+        const identificador = procesarPagoDto.email || procesarPagoDto.cedula_cliente;
+        let usuario = await this.usuarioRepository.findOne({
+            where: { email: identificador },
         });
+        if (!usuario && procesarPagoDto.cedula_cliente) {
+            usuario = await this.usuarioRepository.findOne({
+                where: { documento: procesarPagoDto.cedula_cliente },
+            });
+        }
         if (!usuario) {
             pago.estado = 'fallido';
             await this.pagoRepository.save(pago);
+            await this.enviarWebhook(pago, 'RECHAZADA');
             throw new common_1.BadRequestException('Credenciales inválidas');
         }
         const isPasswordValid = await bcrypt.compare(procesarPagoDto.contrasena, usuario.contrasena);
         if (!isPasswordValid) {
             pago.estado = 'fallido';
             await this.pagoRepository.save(pago);
+            await this.enviarWebhook(pago, 'RECHAZADA');
             throw new common_1.BadRequestException('Credenciales inválidas');
         }
         if (Number(usuario.balance) < Number(pago.monto)) {
             pago.estado = 'fallido';
             await this.pagoRepository.save(pago);
+            await this.enviarWebhook(pago, 'RECHAZADA');
             throw new common_1.BadRequestException('Saldo insuficiente');
         }
         const usuarioDestino = await this.usuarioRepository.findOne({
@@ -121,20 +310,18 @@ let PagosService = class PagosService {
         if (!usuarioDestino) {
             pago.estado = 'fallido';
             await this.pagoRepository.save(pago);
+            await this.enviarWebhook(pago, 'RECHAZADA');
             throw new common_1.NotFoundException('Usuario destino no encontrado');
         }
-        if (Number(usuario.balance) < Number(pago.monto)) {
-            pago.estado = 'fallido';
-            await this.pagoRepository.save(pago);
-            throw new common_1.BadRequestException('Fondos insuficientes');
-        }
         usuario.balance = Number(usuario.balance) - Number(pago.monto);
-        usuarioDestino.balance =
-            Number(usuarioDestino.balance) + Number(pago.monto);
+        usuarioDestino.balance = Number(usuarioDestino.balance) + Number(pago.monto);
+        const codigoAutorizacion = `AUTH-${Date.now()}`;
         pago.estado = 'exitoso';
         pago.fecha = new Date();
+        pago.codigoAutorizacion = codigoAutorizacion;
         await this.usuarioRepository.save([usuario, usuarioDestino]);
         await this.pagoRepository.save(pago);
+        await this.enviarWebhook(pago, 'APROBADA');
         try {
             await this.mailService.enviarConfirmacionPago(usuario.email, `${usuario.nombre} ${usuario.apellido}`, pago.monto, pago.fecha, pago.id);
         }
@@ -146,6 +333,10 @@ let PagosService = class PagosService {
             message: 'Pago procesado exitosamente',
             pagoId: pago.id,
             nuevoBalance: usuario.balance,
+            referencia_transaccion: pago.referenciaTransaccion,
+            estado_transaccion: 'APROBADA',
+            codigo_autorizacion: codigoAutorizacion,
+            url_respuesta: pago.urlRespuesta,
         };
     }
     async cancelarPago(pagoId) {

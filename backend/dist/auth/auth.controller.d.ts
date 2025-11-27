@@ -7,6 +7,7 @@ export declare class AuthController {
     register(registerDto: RegisterDto): Promise<{
         id: number;
         tipoDocumento: string;
+        documento: string;
         nombre: string;
         apellido: string;
         email: string;
@@ -21,6 +22,7 @@ export declare class AuthController {
         user: {
             id: number;
             tipoDocumento: string;
+            documento: string;
             nombre: string;
             apellido: string;
             email: string;
@@ -34,6 +36,7 @@ export declare class AuthController {
     getProfile(req: any): Promise<{
         id: number;
         tipoDocumento: string;
+        documento: string;
         nombre: string;
         apellido: string;
         email: string;

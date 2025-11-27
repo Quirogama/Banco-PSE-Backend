@@ -9,38 +9,39 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ProcesarPagoDto = void 0;
+exports.ReembolsoResponseDto = exports.ReembolsoRequestDto = void 0;
 const class_validator_1 = require("class-validator");
-class ProcesarPagoDto {
-    pagoId;
-    id_pago;
-    email;
-    cedula_cliente;
-    contrasena;
+class ReembolsoRequestDto {
+    id_transaccion_original;
+    referencia_reembolso;
+    monto_a_reembolsar;
+    razon_reembolso;
 }
-exports.ProcesarPagoDto = ProcesarPagoDto;
+exports.ReembolsoRequestDto = ReembolsoRequestDto;
 __decorate([
-    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], ReembolsoRequestDto.prototype, "id_transaccion_original", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], ReembolsoRequestDto.prototype, "referencia_reembolso", void 0);
+__decorate([
     (0, class_validator_1.IsNumber)(),
     __metadata("design:type", Number)
-], ProcesarPagoDto.prototype, "pagoId", void 0);
-__decorate([
-    (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsNumber)(),
-    __metadata("design:type", Number)
-], ProcesarPagoDto.prototype, "id_pago", void 0);
+], ReembolsoRequestDto.prototype, "monto_a_reembolsar", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
-], ProcesarPagoDto.prototype, "email", void 0);
-__decorate([
-    (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsString)(),
-    __metadata("design:type", String)
-], ProcesarPagoDto.prototype, "cedula_cliente", void 0);
-__decorate([
-    (0, class_validator_1.IsString)(),
-    __metadata("design:type", String)
-], ProcesarPagoDto.prototype, "contrasena", void 0);
-//# sourceMappingURL=procesar-pago.dto.js.map
+], ReembolsoRequestDto.prototype, "razon_reembolso", void 0);
+class ReembolsoResponseDto {
+    referencia_reembolso;
+    id_reembolso_banco;
+    estado_solicitud;
+    monto_procesado;
+    codigo_respuesta;
+    mensaje_respuesta;
+}
+exports.ReembolsoResponseDto = ReembolsoResponseDto;
+//# sourceMappingURL=reembolso.dto.js.map
